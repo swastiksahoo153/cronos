@@ -19,9 +19,6 @@ const Task = sequalize.define("task", {
   },
   cronString: {
     type: DataTypes.STRING,
-    allowNull: function (instance) {
-      return !instance.executeOnce;
-    },
   },
   executeOnce: {
     type: DataTypes.BOOLEAN,
@@ -29,9 +26,6 @@ const Task = sequalize.define("task", {
   },
   dateTime: {
     type: DataTypes.DATE,
-    allowNull: function (instance) {
-      return instance.executeOnce;
-    },
   },
   command: {
     type: DataTypes.STRING,

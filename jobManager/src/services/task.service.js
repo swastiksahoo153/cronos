@@ -1,6 +1,6 @@
 const { Task } = require("../models/index");
 
-const addTask = async (name, chronString, executeOnce, dateTime, command) => {
+const addTask = async (name, cronString, executeOnce, dateTime, command) => {
   try {
     let task;
     if (executeOnce) {
@@ -15,7 +15,7 @@ const addTask = async (name, chronString, executeOnce, dateTime, command) => {
       // If executeOnce is false, create task with name, chronString, and command
       task = await Task.create({
         name,
-        chronString,
+        cronString,
         command,
         executeOnce,
       });
@@ -31,7 +31,11 @@ const addTask = async (name, chronString, executeOnce, dateTime, command) => {
 
 const getTaskById = async (taskId) => {
   try {
-    const task = await Task.findOne({ id: taskId });
+    const task = await Task.findOne({
+      where: {
+        id: taskId,
+      },
+    });
     return task;
   } catch (error) {
     console.error("Error fetching task:", error);

@@ -13,17 +13,14 @@ const Job = sequalize.define("job", {
   dateTime: {
     type: DataTypes.DATE,
     allowNull: false,
-    comment: "The time at which the job has to be executed.",
   },
   status: {
-    type: DataTypes.ENUM("pending", "completed", "failed"),
+    type: DataTypes.ENUM("PENDING", "COMPLETED", "FAILED"),
     allowNull: false,
-    comment: "The status of the job: pending, completed, or failed.",
   },
   retries: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    comment: "The number of times this job has been retried.",
+    defaultValue: 0,
   },
 });
 
