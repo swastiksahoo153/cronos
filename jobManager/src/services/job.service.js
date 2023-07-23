@@ -1,4 +1,4 @@
-const { Job, Task } = require("../models/index");
+const { Job, Task } = require("../models");
 const TaskService = require("./task.service");
 const parseCronString = require("../utils/cronStringParser");
 const {
