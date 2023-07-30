@@ -58,7 +58,7 @@ const jobsPoller = async () => {
     });
 
     // Set jobsToBeExecutedNow in Redis for immediate execution
-    redisRepo.set("00-00-00", jobsToBeExecutedNow, 0);
+    redisRepo.set("00-00-00", jobsToBeExecutedNow, 1);
 
     // If there are jobs scheduled in the future, store them in Redis with their respective execution times
     if (Object.keys(jobsGreaterThanCurrentTime).length) {

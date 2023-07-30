@@ -2,6 +2,8 @@ const { Job, Task } = require("../models");
 const { Op } = require("sequelize");
 const { JOB_STATUS } = require("../consts");
 
+const MAX_RETIRES = 3;
+
 /**
  * Fetches jobs that are scheduled for execution before the current time plus 1 hr and have a status of "PENDING".
  * The function queries the database using Sequelize to find jobs that meet the criteria.
@@ -30,8 +32,14 @@ const fetchJobsScheduledInNextHour = async () => {
         dateTime: {
           [Op.lt]: currentTimePlusOneHour,
         },
-        // Jobs with status set to "PENDING"
-        status: JOB_STATUS.PENDING,
+        // Jobs with status set to "PENDING" or "FAILED"
+        status: {
+          [Op.or]: [JOB_STATUS.PENDING, JOB_STATUS.FAILED],
+        },
+        // Jobs having retries less than MAX_RETIRES
+        retries: {
+          [Op.lt]: MAX_RETIRES,
+        },
       },
       attributes: ["id", "dateTime"],
     });

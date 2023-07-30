@@ -66,16 +66,18 @@ async function consumeQueue() {
 
   await channel.assertQueue(queueName);
 
-  channel.consume(queueName, async (message) => {
+  channel.consume(queueName, (message) => {
     if (message !== null) {
       // Parse the message content to get the job object
       const job = JSON.parse(message.content.toString());
 
-      // Process the job
-      await processJob(job);
-
       // Acknowledge the message to remove it from the queue
       channel.ack(message);
+
+      // Process the job
+      processJob(job)
+        .then((result) => {})
+        .catch((error) => {});
     }
   });
 
