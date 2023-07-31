@@ -19,6 +19,7 @@ const getNonRecuringJob = (task) => {
       {
         taskId: task.id,
         dateTime: timeStamp,
+        command: task.command,
       },
     ];
   } catch (error) {
@@ -40,6 +41,7 @@ const getRecurringJobs = (task) => {
       jobs.push({
         taskId: task.id,
         dateTime: date,
+        command: task.command,
       });
     });
 
@@ -49,7 +51,7 @@ const getRecurringJobs = (task) => {
   }
 };
 
-const getPresentDayJobs = async (task) => {
+const getPresentDayJobs = (task) => {
   try {
     // Create jobs for the given tasks that are scheduled for today
     let jobs = [];
@@ -74,7 +76,7 @@ const addJobsToRedis = async (jobs) => {
         id: generateUniqueId(),
         taskId: job.taskId,
         dateTime: job.dateTime,
-        command: taskConsumer.command,
+        command: job.command,
         retries: 0,
       };
     });
@@ -82,16 +84,18 @@ const addJobsToRedis = async (jobs) => {
     // Get the current time in milliseconds since January 1, 1970
     const currentTime = new Date().getTime();
 
-    jobsToBeAdded.forEach((job) => {
+    jobsToBeAdded.forEach(async (job) => {
       const jobTime = new Date(job.dateTime).getTime();
       if (jobTime > currentTime) {
         const timeDifferenceInSeconds = Math.floor(
           (jobTime - currentTime) / 1000
         );
-        redisRepo.set(job.id, jobTime, timeDifferenceInSeconds);
+        await redisRepo.set(job.id, job, timeDifferenceInSeconds);
       } else {
-        redisRepo.set(job.id, job, 1);
+        await redisRepo.set(job.id, job, 1);
       }
+      // Maintain task id to job id, used while deleting jobs for a task
+      await redisRepo.addToSet(`taskId#${job.taskId}`, job.id);
     });
   } catch (error) {
     console.error(error);
@@ -115,7 +119,6 @@ const getAllJobs = async () => {
 };
 
 module.exports = {
-  addPresentDayJobsToDB,
   getAllJobs,
   getPresentDayJobs,
   addJobsToRedis,

@@ -1,8 +1,0 @@
-const JOB_STATUS = {
-  PENDING: "PENDING",
-  RUNNING: "RUNNING",
-  COMPLETED: "COMPLETED",
-  FAILED: "FAILED",
-};
-
-module.exports = { JOB_STATUS };

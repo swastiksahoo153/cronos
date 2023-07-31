@@ -9,7 +9,7 @@ const amqp = require("amqplib");
  * @param {Array<Object>} jobs - An array of jobs to enqueue into the RabbitMQ queue.
  * @returns {Promise<void>} A Promise that resolves when all jobs have been enqueued successfully.
  */
-async function enqueueJobs(jobs) {
+async function enqueueJobs(job) {
   try {
     // Establish a connection to the RabbitMQ server
     const connection = await amqp.connect("amqp://localhost");
@@ -24,9 +24,7 @@ async function enqueueJobs(jobs) {
     await channel.assertQueue(queueName);
 
     // Send each job to the queue as a JSON string
-    jobs.forEach((job) => {
-      channel.sendToQueue(queueName, Buffer.from(JSON.stringify(job)));
-    });
+    channel.sendToQueue(queueName, Buffer.from(JSON.stringify(job)));
 
     // Close the channel and the connection after all jobs have been sent to the queue
     await channel.close();

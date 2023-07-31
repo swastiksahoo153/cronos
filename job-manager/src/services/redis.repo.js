@@ -5,7 +5,7 @@ const db = 0;
 
 /**
  * Represents a Redis repository.
- * @class
+ * @class RedisRepo
  */
 class RedisRepo {
   /**
@@ -43,13 +43,13 @@ class RedisRepo {
    * @param {string} key - The key to set the value for.
    * @param {string} value - The value to set.
    * @param {number} expire - The time-to-live (TTL) for the key in seconds.
-   * @returns {void}
+   * @returns {Promise<void>} A Promise that resolves after the operations are executed.
    */
   set(key, value, expire) {
     try {
-      this.redis
+      return this.redis
         .multi()
-        .set(key, JSON.stringify(value)) // convert to json in order to store complex data structures like list
+        .set(key, JSON.stringify(value)) // convert to JSON in order to store complex data structures like lists
         .set(`notifier#${key}`, 1)
         .expire(`notifier#${key}`, expire)
         .exec();
@@ -65,6 +65,49 @@ class RedisRepo {
    */
   delete(key) {
     return this.redis.del(key);
+  }
+
+  /**
+   * Add elements to a Redis set.
+   * @param {string} setKey - The key of the set to add elements to.
+   * @param {...string} elements - Elements to be added to the set.
+   * @returns {Promise<number>} A Promise that resolves with the number of elements added to the set.
+   */
+  async addToSet(setKey, ...elements) {
+    try {
+      return await this.redis.sadd(setKey, ...elements);
+    } catch (error) {
+      console.error("Error adding elements to set:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Remove elements from a Redis set by their value.
+   * @param {string} setKey - The key of the set to remove elements from.
+   * @param {...string} elements - Elements to be removed from the set.
+   * @returns {Promise<number>} A Promise that resolves with the number of elements removed from the set.
+   */
+  async removeFromSetByValue(setKey, ...elements) {
+    try {
+      return await this.redis.srem(setKey, ...elements);
+    } catch (error) {
+      console.error("Error removing elements from set:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Get all elements from a Redis set.
+   * @param {string} setKey - The key of the set to retrieve elements from.
+   * @returns {Promise<string[]>} A Promise that resolves with an array of elements in the set.
+   */
+  async getSetElements(setKey) {
+    try {
+      return await this.redis.smembers(setKey);
+    } catch (error) {
+      console.error("Error getting elements from set:", error);
+    }
   }
 }
 

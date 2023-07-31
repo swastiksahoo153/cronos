@@ -18,7 +18,7 @@ async function taskConsumer() {
       const jobs = getPresentDayJobs(task);
 
       // Add the jobs to redis with proper TTL
-      addJobsToRedis(jobs);
+      await addJobsToRedis(jobs);
 
       // Acknowledge the message to remove it from the queue
       channel.ack(message);

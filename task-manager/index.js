@@ -1,7 +1,8 @@
 const express = require("express");
 const apiRoutes = require("./src/routes");
-const taskConsumer = require("./src/services/task.consumer");
-const RedisExpiredEvents = require("./src/services/redis.expired-events");
+
+const scheduleTaskForMidnight = require("./src/utils/midnightJobScheduler");
+const { getTasksAndEnqueue } = require("./src/services/task.enqueuer");
 
 const { connectToDB } = require("./src/configs/mysqldb");
 
@@ -20,7 +21,5 @@ app.get("/", (request, response) => {
 app.listen(PORT, async () => {
   console.log(`Server is running at http://localhost:${PORT}`);
   await connectToDB();
-  // Start listening for Redis expired events
-  RedisExpiredEvents();
-  taskConsumer().catch((error) => console.error("Error:", error));
+  scheduleTaskForMidnight(getTasksAndEnqueue);
 });

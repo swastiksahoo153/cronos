@@ -22,10 +22,10 @@ function RedisExpiredEvents() {
     switch (type) {
       case "notifier": {
         // Get the jobs associated with the expired key from Redis
-        const jobs = await redisRepo.get(key);
+        const job = await redisRepo.get(key);
 
         // Enqueue the jobs for execution
-        await enqueueJobs(JSON.parse(jobs));
+        await enqueueJobs(JSON.parse(job));
 
         // Delete the expired key from Redis
         await redisRepo.delete(key);
