@@ -4,6 +4,7 @@ const parseCronString = require("../utils/cronStringParser");
 const {
   getTodayDateTimeFromSchedule,
   generateUniqueId,
+  getTaskKey,
 } = require("../utils/helpers");
 
 const getNonRecuringJob = (task) => {
@@ -95,7 +96,7 @@ const addJobsToRedis = async (jobs) => {
         await redisRepo.set(job.id, job, 1);
       }
       // Maintain task id to job id, used while deleting jobs for a task
-      await redisRepo.addToSet(`taskId#${job.taskId}`, job.id);
+      await redisRepo.addToSet(getTaskKey(job.taskId), job.id);
     });
   } catch (error) {
     console.error(error);

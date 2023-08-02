@@ -54,8 +54,18 @@ function generateUniqueId() {
   return `${timestamp}-${randomStr}`;
 }
 
+function getTaskKey(taskId) {
+  return `taskId#${taskId}`;
+}
+
+function getNotifierKey(key) {
+  return `notifier#${key}`;
+}
+
 module.exports = {
   getTodayDateTimeFromSchedule,
   isDateToday,
   generateUniqueId,
+  getTaskKey,
+  getNotifierKey,
 };

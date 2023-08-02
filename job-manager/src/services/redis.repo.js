@@ -1,4 +1,6 @@
 const Redis = require("ioredis");
+const { getNotifierKey } = require("../utils/helpers");
+
 const host = "localhost";
 const port = 6379;
 const db = 0;
@@ -50,8 +52,8 @@ class RedisRepo {
       return this.redis
         .multi()
         .set(key, JSON.stringify(value)) // convert to JSON in order to store complex data structures like lists
-        .set(`notifier#${key}`, 1)
-        .expire(`notifier#${key}`, expire)
+        .set(getNotifierKey(key), 1) // set random value for the wrapper key
+        .expire(getNotifierKey(key), 15)
         .exec();
     } catch (error) {
       console.error(error);
@@ -88,7 +90,7 @@ class RedisRepo {
    * @param {...string} elements - Elements to be removed from the set.
    * @returns {Promise<number>} A Promise that resolves with the number of elements removed from the set.
    */
-  async removeFromSetByValue(setKey, ...elements) {
+  async deleteFromSetByValue(setKey, ...elements) {
     try {
       return await this.redis.srem(setKey, ...elements);
     } catch (error) {
@@ -108,6 +110,16 @@ class RedisRepo {
     } catch (error) {
       console.error("Error getting elements from set:", error);
     }
+  }
+
+  async getSetLength(setKey) {
+    this.redis.scard(setKey, (err, length) => {
+      if (err) {
+        console.error(`Error while getting length of set :${setKey}`, err);
+      } else {
+        return length;
+      }
+    });
   }
 }
 
