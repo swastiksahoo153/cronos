@@ -22,5 +22,10 @@ app.listen(PORT, async () => {
   await connectToDB();
   // Start listening for Redis expired events
   RedisExpiredEvents();
-  taskConsumer().catch((error) => console.error("Error:", error));
+  taskConsumer("add_tasks_queue").catch((error) =>
+    console.error("Error:", error)
+  );
+  taskConsumer("delete_tasks_queue").catch((error) =>
+    console.error("Error:", error)
+  );
 });

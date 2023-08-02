@@ -53,6 +53,24 @@ const getAllTasks = async () => {
   }
 };
 
+const updateTaskById = async (taskId, fieldsToUpdate) => {
+  try {
+    const taskToUpdate = await Task.findOne({
+      where: { id: taskId },
+    });
+    if (!taskToUpdate) {
+      console.error(`Error updating task ${taskId}`);
+      return null;
+    }
+    //TODO: add updation logic
+    await taskToUpdate.save();
+    return taskToUpdate;
+  } catch (error) {
+    console.error("Error updating task:", error);
+    throw error;
+  }
+};
+
 const deleteTaskById = async (taskId) => {
   try {
     const deletedTask = await Task.destroy({
@@ -65,4 +83,10 @@ const deleteTaskById = async (taskId) => {
   }
 };
 
-module.exports = { addTask, getTaskById, getAllTasks, deleteTaskById };
+module.exports = {
+  addTask,
+  getTaskById,
+  getAllTasks,
+  updateTaskById,
+  deleteTaskById,
+};

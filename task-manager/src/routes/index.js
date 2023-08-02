@@ -25,6 +25,13 @@ router.get("/task/all", TaskController.getAllTasksController);
 router.get("/task/:id", TaskController.getTaskByIdController);
 
 /**
+ * @route   PUT /task
+ * @desc    Put a task by ID
+ * @access  Public
+ */
+router.put("/task/:id", TaskController.updateTaskByIdControler);
+
+/**
  * @route   DELETE /task
  * @desc    Delete a task by ID
  * @access  Public

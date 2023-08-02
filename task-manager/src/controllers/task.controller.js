@@ -13,7 +13,7 @@ const addTaskController = async (req, res) => {
       command
     );
 
-    await enqueueTasks([task]);
+    await enqueueTasks([task], "add_tasks_queue");
 
     res.status(201).json(task);
   } catch (error) {
@@ -56,6 +56,26 @@ const getAllTasksController = async (req, res) => {
   }
 };
 
+const updateTaskByIdControler = async (req, res) => {
+  try {
+    const updatedTask = await TaskService.updateTaskById(
+      req.params.taskId,
+      req.body.fields
+    );
+    if (!updatedTask) {
+      return res.status(404).json({ message: "Task not found." });
+    }
+
+    await enqueueTasks([updatedTask], "update_tasks_queue");
+  } catch (error) {
+    console.error("Error updating task:", error);
+    res.status(500).json({
+      message: "Failed to update task. Please try again later.",
+      error,
+    });
+  }
+};
+
 const deleteTaskByIdController = async (req, res) => {
   const taskId = req.params.id;
 
@@ -64,6 +84,8 @@ const deleteTaskByIdController = async (req, res) => {
     if (!deletedTask) {
       return res.status(404).json({ message: "Task not found." });
     }
+
+    await enqueueTasks([taskId], "delete_tasks_queue");
 
     res.status(200).json({ message: "Task deleted successfully." });
   } catch (error) {
@@ -79,5 +101,6 @@ module.exports = {
   addTaskController,
   getTaskByIdController,
   getAllTasksController,
+  updateTaskByIdControler,
   deleteTaskByIdController,
 };

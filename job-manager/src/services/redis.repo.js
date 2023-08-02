@@ -53,7 +53,7 @@ class RedisRepo {
         .multi()
         .set(key, JSON.stringify(value)) // convert to JSON in order to store complex data structures like lists
         .set(getNotifierKey(key), 1) // set random value for the wrapper key
-        .expire(getNotifierKey(key), 15)
+        .expire(getNotifierKey(key), expire)
         .exec();
     } catch (error) {
       console.error(error);
