@@ -3,23 +3,31 @@ const { getPresentDayJobs, addJobsToRedis } = require("./job.service");
 const RedisRepo = require("./redis.repo");
 
 const addJobsService = async (task) => {
-  // Make all the job for this task
-  const jobs = getPresentDayJobs(task);
+  try {
+    // Make all the job for this task
+    const jobs = getPresentDayJobs(task);
 
-  // Add the jobs to redis with proper TTL
-  await addJobsToRedis(jobs);
+    // Add the jobs to redis with proper TTL
+    await addJobsToRedis(jobs);
+  } catch (error) {
+    console.error("Error adding jobs to redis: " + error);
+  }
 };
 
-const deleteJobsService = async (task) => {
-  const redisRepo = new RedisRepo();
-  const setElements = await redisRepo.getSetElements(`taskId#${task.id}`);
+const deleteJobsService = async (taskId) => {
+  try {
+    const redisRepo = new RedisRepo();
+    const setElements = await redisRepo.getSetElements(`taskId#${taskId}`);
 
-  setElements.forEach(async (jobId) => {
-    await redisRepo.delete(jobId);
-    await redisRepo.delete(`notifier#${jobId}`);
-  });
+    setElements.forEach(async (jobId) => {
+      await redisRepo.delete(jobId);
+      await redisRepo.delete(`notifier#${jobId}`);
+    });
 
-  await redisRepo.delete(`taskId#${task.id}`);
+    await redisRepo.delete(`taskId#${taskId}`);
+  } catch (error) {
+    console.error("Error while deleting jobs from redis: " + error);
+  }
 };
 
 async function addJobs(channel, queueName) {
@@ -40,9 +48,9 @@ async function deleteJobs(channel, queueName) {
   channel.consume(queueName, async (message) => {
     if (message !== null) {
       // Parse the message content to get the job object
-      const task = JSON.parse(message.content.toString());
+      const taskId = JSON.parse(message.content.toString());
 
-      await deleteJobsService(task);
+      await deleteJobsService(taskId);
 
       // Acknowledge the message to remove it from the queue
       channel.ack(message);
@@ -54,18 +62,10 @@ async function updateJobs(channel, queueName) {
   channel.consume(queueName, async (message) => {
     if (message !== null) {
       // Parse the message content to get the job object
-      const taskId = JSON.parse(message.content.toString());
+      const task = JSON.parse(message.content.toString());
 
-      const redisRepo = new RedisRepo();
-
-      const setElements = await redisRepo.getSetElements(`taskId#${taskId}`);
-
-      setElements.forEach(async (jobId) => {
-        await redisRepo.delete(jobId);
-        await redisRepo.delete(`notifier#${jobId}`);
-      });
-
-      await redisRepo.delete(`taskId#${taskId}`);
+      await deleteJobsService(task.id);
+      await addJobsService(task);
 
       // Acknowledge the message to remove it from the queue
       channel.ack(message);
@@ -74,26 +74,33 @@ async function updateJobs(channel, queueName) {
 }
 
 async function taskConsumer(queueName) {
-  const connection = await amqp.connect("amqp://localhost");
-  const channel = await connection.createChannel();
+  try {
+    const connection = await amqp.connect("amqp://localhost");
+    const channel = await connection.createChannel();
 
-  await channel.assertQueue(queueName);
+    console.log("channel: ", queueName);
 
-  switch (queueName) {
-    case "add_tasks_queue":
-      addJobs(channel, queueName);
-      break;
-    case "delete_tasks_queue":
-      deleteJobs(channel, queueName);
-      break;
-    case "update_tasks_queue":
-      deleteJobs(channel, queueName);
-      break;
-    default:
-      console.error(`Invalid queue ${queueName}`);
+    await channel.assertQueue(queueName);
+
+    //Note: Whenever adding a new queue here, don't forget listen for it in index.js
+    switch (queueName) {
+      case "add_tasks_queue":
+        addJobs(channel, queueName);
+        break;
+      case "delete_tasks_queue":
+        deleteJobs(channel, queueName);
+        break;
+      case "update_tasks_queue":
+        updateJobs(channel, queueName);
+        break;
+      default:
+        console.error(`Invalid queue ${queueName}`);
+    }
+
+    console.log("Consumer is ready to consume messages...");
+  } catch (error) {
+    console.error(error);
   }
-
-  console.log("Consumer is ready to consume messages...");
 }
 
 module.exports = taskConsumer;

@@ -59,14 +59,15 @@ const getAllTasksController = async (req, res) => {
 const updateTaskByIdControler = async (req, res) => {
   try {
     const updatedTask = await TaskService.updateTaskById(
-      req.params.taskId,
-      req.body.fields
+      req.params.id,
+      req.body
     );
     if (!updatedTask) {
       return res.status(404).json({ message: "Task not found." });
     }
 
     await enqueueTasks([updatedTask], "update_tasks_queue");
+    return res.status(200).json(updatedTask);
   } catch (error) {
     console.error("Error updating task:", error);
     res.status(500).json({

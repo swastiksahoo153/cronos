@@ -55,16 +55,16 @@ const getAllTasks = async () => {
 
 const updateTaskById = async (taskId, fieldsToUpdate) => {
   try {
-    const taskToUpdate = await Task.findOne({
-      where: { id: taskId },
+    const taskToUpdate = await Task.findByPk(taskId);
+
+    const filteredUpdatedTask = {};
+    Object.keys(fieldsToUpdate).forEach((key) => {
+      if (Task.rawAttributes.hasOwnProperty(key)) {
+        filteredUpdatedTask[key] = fieldsToUpdate[key];
+      }
     });
-    if (!taskToUpdate) {
-      console.error(`Error updating task ${taskId}`);
-      return null;
-    }
-    //TODO: add updation logic
-    await taskToUpdate.save();
-    return taskToUpdate;
+
+    return taskToUpdate.update(fieldsToUpdate);
   } catch (error) {
     console.error("Error updating task:", error);
     throw error;

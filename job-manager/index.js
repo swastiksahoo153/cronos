@@ -28,4 +28,7 @@ app.listen(PORT, async () => {
   taskConsumer("delete_tasks_queue").catch((error) =>
     console.error("Error:", error)
   );
+  taskConsumer("update_tasks_queue").catch((error) =>
+    console.error("Error:", error)
+  );
 });
