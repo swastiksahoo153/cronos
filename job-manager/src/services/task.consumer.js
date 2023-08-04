@@ -78,8 +78,6 @@ async function taskConsumer(queueName) {
     const connection = await amqp.connect("amqp://localhost");
     const channel = await connection.createChannel();
 
-    console.log("channel: ", queueName);
-
     await channel.assertQueue(queueName);
 
     //Note: Whenever adding a new queue here, don't forget listen for it in index.js

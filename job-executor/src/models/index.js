@@ -1,16 +1,16 @@
 const sequalize = require("../configs/mysqldb").sequalize;
 const Task = require("./task.model");
-const Job = require("./job.model");
+const ExecutionLog = require("./execution.log.model");
 
-// Establishing a one-to-many relationship between Task and Job
-Task.hasMany(Job, {
+// Establishing a one-to-many relationship between Task and ExecutionLog
+Task.hasMany(ExecutionLog, {
   foreignKey: {
     allowNull: false,
   },
 });
-Job.belongsTo(Task);
+ExecutionLog.belongsTo(Task);
 
 // Execute the sync command to run migrations
 sequalize.sync();
 
-module.exports = { Task, Job };
+module.exports = { Task, ExecutionLog };

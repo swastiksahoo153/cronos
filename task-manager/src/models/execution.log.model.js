@@ -11,9 +11,17 @@ const jobStatusOptions = Object.values(JOB_STATUS);
  * @property {('pending' | 'completed' | 'failed')} status - The status of the job. (Required)
  */
 
-const Job = sequalize.define("job", {
-  dateTime: {
+const ExecutionLog = sequalize.define("execution-log", {
+  scheduledTime: {
     type: DataTypes.DATE,
+    allowNull: false,
+  },
+  completionTime: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  output: {
+    type: DataTypes.STRING,
     allowNull: false,
   },
   status: {
@@ -22,4 +30,4 @@ const Job = sequalize.define("job", {
   },
 });
 
-module.exports = Job;
+module.exports = ExecutionLog;

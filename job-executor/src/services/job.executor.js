@@ -9,14 +9,14 @@ const { exec } = require("child_process");
  */
 function executeCommand(command) {
   // Temporary: Prepend "echo " to the command for demonstration purposes
-  command = "echo " + command;
+  command = "oi " + command;
 
   return new Promise((resolve, reject) => {
     exec(command, (error, stdout, stderr) => {
       if (error) {
         // Log the error message and reject the Promise
-        console.error(`Error executing command: ${error.message}`);
-        reject(error);
+        console.error(`Error executing command: ${error}`);
+        reject(stderr);
       } else {
         // Log the standard output and resolve the Promise with the output
         console.log(`Command output: ${stdout}`);
