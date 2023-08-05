@@ -1,7 +1,43 @@
 const amqp = require("amqplib");
+const RedisRepo = require("./redis.repo");
 const { executeCommand } = require("./job.executor");
 const { createExecutionLog } = require("./execution.log.service");
 const { JOB_STATUS } = require("../consts");
+const { getTaskKey } = require("../utils/helpers");
+
+const redisRepo = new RedisRepo();
+
+async function removeJobFromRedis(job) {
+  await redisRepo.delete(job.id);
+
+  // get task-id and delete key from the task - key mapping
+  const taskKey = getTaskKey(job.taskId);
+  await redisRepo.deleteFromSetByValue(taskKey, job.id);
+  const setLength = await redisRepo.getSetLength(taskKey);
+  if (setLength == 0) {
+    await redisRepo.delete(taskKey);
+  }
+}
+
+async function handleOnSuccessJobExecutionTasks(job, result, status) {
+  await removeJobFromRedis(job);
+  return createExecutionLog(job, result, status);
+}
+
+async function handleOnFailureJobExecutionTasks(job, result, status) {
+  let chachedJob = await redisRepo.get(job.id);
+  chachedJob = JSON.parse(chachedJob);
+  if (chachedJob.retries < 2) {
+    let jobFromRedis = await redisRepo.get(job.id);
+    jobFromRedis = JSON.parse(jobFromRedis);
+    jobFromRedis.retries = 1 + jobFromRedis.retries;
+    console.log(
+      `Scheduling re-execution of the job ${job}, retry number: ${jobFromRedis.retries}`
+    );
+    await redisRepo.set(job.id, jobFromRedis, 1);
+  }
+  return createExecutionLog(job, result, status);
+}
 
 /**
  * Consume messages from the "jobs_queue" and process each job.
@@ -27,17 +63,21 @@ async function consumeQueue(queueName) {
 
       // Process the job
       executeCommand(job.command)
-        .then((result) => {
-          console.log("result: " + result);
-          return createExecutionLog(job, result, JOB_STATUS.COMPLETED);
-        })
-        .then((executionLog) => {
-          console.log("created executionLog: " + executionLog);
+        .then((stdout) => {
+          console.log("stdout: " + stdout);
+          return handleOnSuccessJobExecutionTasks(
+            job,
+            stdout,
+            JOB_STATUS.COMPLETED
+          );
         })
         .catch((error) => {
           console.log("error: " + error);
-          // TODO: Add retry logic
-          return createExecutionLog(job, error, JOB_STATUS.FAILED);
+          return handleOnFailureJobExecutionTasks(
+            job,
+            error,
+            JOB_STATUS.FAILED
+          );
         });
     }
   });

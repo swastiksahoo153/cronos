@@ -9,7 +9,7 @@ const { exec } = require("child_process");
  */
 function executeCommand(command) {
   // Temporary: Prepend "echo " to the command for demonstration purposes
-  command = "oi " + command;
+  command = "echo " + command;
 
   return new Promise((resolve, reject) => {
     exec(command, (error, stdout, stderr) => {
