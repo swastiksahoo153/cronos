@@ -1,5 +1,6 @@
 const Sequalize = require("sequelize");
 require("dotenv").config();
+const { logger } = require("../../logger");
 
 // Syntax for setting up a new connection
 // Sequalize (database_name, user_name, password, {dialect: database, host: host})
@@ -16,9 +17,9 @@ const sequalize = new Sequalize("cron", "root", PASSWORD, {
 const connectToDB = async () => {
   try {
     await sequalize.authenticate();
-    console.log("Successfully connected to the database.");
+    logger.log("Successfully connected to the database.");
   } catch (error) {
-    console.log(error);
+    logger.log(error);
   }
 };
 

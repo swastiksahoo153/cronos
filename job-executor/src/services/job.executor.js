@@ -1,4 +1,5 @@
 const { exec } = require("child_process");
+const { logger } = require("../../logger");
 
 /**
  * Execute a command in the terminal using Node.js' `child_process.exec` method.
@@ -15,11 +16,11 @@ function executeCommand(command) {
     exec(command, (error, stdout, stderr) => {
       if (error) {
         // Log the error message and reject the Promise
-        console.error(`Error executing command: ${error}`);
+        logger.error(`Error executing command: ${error}`);
         reject(stderr);
       } else {
         // Log the standard output and resolve the Promise with the output
-        console.log(`Command output: ${stdout}`);
+        logger.info(`Command output: ${stdout}`);
         resolve(stdout);
       }
     });

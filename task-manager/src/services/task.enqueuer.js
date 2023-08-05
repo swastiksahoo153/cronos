@@ -1,5 +1,6 @@
 const amqp = require("amqplib");
 const { getAllTasks } = require("./task.service");
+const { logger } = require("../../logger");
 
 /**
  * Enqueues tasks into a RabbitMQ queue named "add_tasks_queue".
@@ -11,28 +12,26 @@ const { getAllTasks } = require("./task.service");
  * @returns {Promise<void>} A Promise that resolves when all tasks have been enqueued successfully.
  */
 async function enqueueTasks(tasks, queueName) {
-  try {
-    // Establish a connection to the RabbitMQ server
-    const connection = await amqp.connect("amqp://localhost");
+  // Establish a connection to the RabbitMQ server
+  const connection = await amqp.connect("amqp://localhost");
 
-    // Create a channel for communication
-    const channel = await connection.createChannel();
+  // Create a channel for communication
+  const channel = await connection.createChannel();
 
-    // Assert the existence of the queue; if it doesn't exist, it will be created
-    await channel.assertQueue(queueName);
+  // Assert the existence of the queue; if it doesn't exist, it will be created
+  await channel.assertQueue(queueName);
 
-    // Send each task to the queue as a JSON string
-    tasks.forEach((task) => {
-      channel.sendToQueue(queueName, Buffer.from(JSON.stringify(task)));
-    });
+  // Send each task to the queue as a JSON string
+  tasks.forEach((task) => {
+    logger.info(
+      `Enqueueing task ${JSON.stringify(task)} to queue ${queueName}`
+    );
+    channel.sendToQueue(queueName, Buffer.from(JSON.stringify(task)));
+  });
 
-    // Close the channel and the connection after all tasks have been sent to the queue
-    await channel.close();
-    await connection.close();
-  } catch (error) {
-    // Log any errors that occur during the process
-    console.error("An error occurred in enqueueing tasks:", error);
-  }
+  // Close the channel and the connection after all tasks have been sent to the queue
+  await channel.close();
+  await connection.close();
 }
 
 async function getTasksAndEnqueue() {
@@ -40,7 +39,7 @@ async function getTasksAndEnqueue() {
     const tasks = await getAllTasks();
     await enqueueTasks(tasks, "add_tasks_queue");
   } catch (error) {
-    console.error("An error occurred in fetching and enqueueing tasks:", error);
+    logger.error("An error occurred in fetching and enqueueing tasks:", error);
   }
 }
 

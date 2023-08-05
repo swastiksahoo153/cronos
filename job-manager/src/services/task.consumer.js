@@ -1,32 +1,44 @@
 const amqp = require("amqplib");
 const { getPresentDayJobs, addJobsToRedis } = require("./job.service");
 const RedisRepo = require("./redis.repo");
+const { logger } = require("../../logger");
 
 const addJobsService = async (task) => {
   try {
     // Make all the job for this task
     const jobs = getPresentDayJobs(task);
+    logger.info(
+      `Following jobs are being created for the task: ${JSON.stringify(
+        task
+      )}: Jobs: ${JSON.stringify(jobs)}`
+    );
 
     // Add the jobs to redis with proper TTL
     await addJobsToRedis(jobs);
   } catch (error) {
-    console.error("Error adding jobs to redis: " + error);
+    logger.error("Error adding jobs to redis: " + error);
   }
 };
 
 const deleteJobsService = async (taskId) => {
   try {
     const redisRepo = new RedisRepo();
-    const setElements = await redisRepo.getSetElements(`taskId#${taskId}`);
+    const jobIds = await redisRepo.getSetElements(`taskId#${taskId}`);
 
-    setElements.forEach(async (jobId) => {
+    jobIds.forEach(async (jobId) => {
       await redisRepo.delete(jobId);
       await redisRepo.delete(`notifier#${jobId}`);
     });
 
+    logger.info(
+      `Following jobs are being deleted for the task: ${JSON.stringify(
+        task
+      )}: Job Ids: ${JSON.stringify(jobIds)}`
+    );
+
     await redisRepo.delete(`taskId#${taskId}`);
   } catch (error) {
-    console.error("Error while deleting jobs from redis: " + error);
+    logger.error("Error while deleting jobs from redis: " + error);
   }
 };
 
@@ -35,6 +47,9 @@ async function addJobs(channel, queueName) {
     if (message !== null) {
       // Parse the message content to get the job object
       const task = JSON.parse(message.content.toString());
+      logger.info(
+        `Dequeueing task: ${JSON.stringify(task)} from queue ${queueName}`
+      );
 
       await addJobsService(task);
 
@@ -49,6 +64,9 @@ async function deleteJobs(channel, queueName) {
     if (message !== null) {
       // Parse the message content to get the job object
       const taskId = JSON.parse(message.content.toString());
+      logger.info(
+        `Dequeueing task with task id: ${taskId} from queue ${queueName}`
+      );
 
       await deleteJobsService(taskId);
 
@@ -63,6 +81,9 @@ async function updateJobs(channel, queueName) {
     if (message !== null) {
       // Parse the message content to get the job object
       const task = JSON.parse(message.content.toString());
+      logger.info(
+        `Dequeueing task: ${JSON.stringify(task)} from queue ${queueName}`
+      );
 
       await deleteJobsService(task.id);
       await addJobsService(task);
@@ -92,12 +113,12 @@ async function taskConsumer(queueName) {
         updateJobs(channel, queueName);
         break;
       default:
-        console.error(`Invalid queue ${queueName}`);
+        logger.error(`Invalid queue ${queueName}`);
     }
 
-    console.log("Consumer is ready to consume messages...");
+    logger.info("Consumer is ready to consume messages...");
   } catch (error) {
-    console.error(error);
+    logger.error(error);
   }
 }
 

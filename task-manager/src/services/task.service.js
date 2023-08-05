@@ -1,4 +1,5 @@
 const { Task } = require("../models/index");
+const { logger } = require("../../logger");
 
 const addTask = async (name, cronString, executeOnce, dateTime, command) => {
   try {
@@ -21,10 +22,12 @@ const addTask = async (name, cronString, executeOnce, dateTime, command) => {
       });
     }
 
+    logger.info("Task added: " + JSON.stringify(task));
+
     return task;
   } catch (error) {
     // Handle any errors that might occur during database operation
-    console.error("Error adding task:", error);
+    logger.error("Error adding task:", error);
     throw error;
   }
 };
@@ -36,9 +39,10 @@ const getTaskById = async (taskId) => {
         id: taskId,
       },
     });
+    logger.info("Found task with task id: ", taskId, JSON.stringify(task));
     return task;
   } catch (error) {
-    console.error("Error fetching task:", error);
+    logger.error("Error fetching task:", error);
     throw error;
   }
 };
@@ -46,9 +50,13 @@ const getTaskById = async (taskId) => {
 const getAllTasks = async () => {
   try {
     const tasks = await Task.findAll({});
+    logger.info(
+      "Fetched tasks with task ids:",
+      tasks.map((task) => task.id)
+    );
     return tasks;
   } catch (error) {
-    console.error("Error fetching tasks:", error);
+    logger.error("Error fetching tasks:", error);
     throw error;
   }
 };
@@ -64,9 +72,14 @@ const updateTaskById = async (taskId, fieldsToUpdate) => {
       }
     });
 
-    return taskToUpdate.update(fieldsToUpdate);
+    const updatedTask = await taskToUpdate.update(fieldsToUpdate);
+    logger.info(
+      `Task with task id ${taskId} updated to ${JSON.stringify(updatedTask)}`
+    );
+
+    return updatedTask;
   } catch (error) {
-    console.error("Error updating task:", error);
+    logger.error("Error updating task:", error);
     throw error;
   }
 };
@@ -76,9 +89,11 @@ const deleteTaskById = async (taskId) => {
     const deletedTask = await Task.destroy({
       where: { id: taskId },
     });
+    logger.info("Task deleted: " + JSON.stringify(deletedTask));
+
     return deletedTask;
   } catch (error) {
-    console.error("Error deleting task:", error);
+    logger.error("Error deleting task:", error);
     throw error;
   }
 };

@@ -1,4 +1,5 @@
 const amqp = require("amqplib");
+const { logger } = require("../../logger");
 
 /**
  * Enqueues jobs into a RabbitMQ queue named "jobs_queue".
@@ -24,6 +25,9 @@ async function enqueueJobs(job) {
     await channel.assertQueue(queueName);
 
     // Send each job to the queue as a JSON string
+    logger.info(
+      `Enqueueing the job ${JSON.stringify(job)} to queue ${queueName}`
+    );
     channel.sendToQueue(queueName, Buffer.from(JSON.stringify(job)));
 
     // Close the channel and the connection after all jobs have been sent to the queue
@@ -31,7 +35,7 @@ async function enqueueJobs(job) {
     await connection.close();
   } catch (error) {
     // Log any errors that occur during the process
-    console.error("An error occurred in enqueueJobs:", error);
+    logger.error("An error occurred in enqueueJobs:", error);
   }
 }
 

@@ -1,4 +1,5 @@
 const express = require("express");
+const { logger, morganMiddleware } = require("./logger");
 const apiRoutes = require("./src/routes");
 
 const scheduleTaskForMidnight = require("./src/utils/midnightJobScheduler");
@@ -12,6 +13,7 @@ const app = express();
 const PORT = process.env.PORT;
 
 app.use(express.json());
+app.use(morganMiddleware);
 app.use("/api", apiRoutes);
 
 app.get("/", (request, response) => {
@@ -19,7 +21,7 @@ app.get("/", (request, response) => {
 });
 
 app.listen(PORT, async () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+  logger.info(`Server is running at http://localhost:${PORT}`);
   await connectToDB();
   scheduleTaskForMidnight(getTasksAndEnqueue);
 });

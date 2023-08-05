@@ -1,5 +1,6 @@
 const TaskService = require("../services/task.service");
 const { enqueueTasks } = require("../services/task.enqueuer");
+const { logger } = require("../../logger");
 
 const addTaskController = async (req, res) => {
   const { name, cronString, executeOnce, dateTime, command } = req.body;
@@ -17,7 +18,7 @@ const addTaskController = async (req, res) => {
 
     res.status(201).json(task);
   } catch (error) {
-    console.error("Error adding task:", error);
+    logger.error("Error adding task:", error);
     res
       .status(500)
       .json({ message: "Failed to add task. Please try again later.", error });
@@ -35,7 +36,7 @@ const getTaskByIdController = async (req, res) => {
 
     res.status(200).json(task);
   } catch (error) {
-    console.error("Error fetching task:", error);
+    logger.error("Error fetching task:", error);
     res.status(500).json({
       message: "Failed to fetch task. Please try again later.",
       error,
@@ -48,7 +49,7 @@ const getAllTasksController = async (req, res) => {
     const tasks = await TaskService.getAllTasks();
     res.status(200).json(tasks);
   } catch (error) {
-    console.error("Error fetching tasks:", error);
+    logger.error("Error fetching tasks:", error);
     res.status(500).json({
       message: "Failed to fetch tasks. Please try again later.",
       error,
@@ -69,7 +70,7 @@ const updateTaskByIdControler = async (req, res) => {
     await enqueueTasks([updatedTask], "update_tasks_queue");
     return res.status(200).json(updatedTask);
   } catch (error) {
-    console.error("Error updating task:", error);
+    logger.error("Error updating task:", error);
     res.status(500).json({
       message: "Failed to update task. Please try again later.",
       error,
@@ -90,7 +91,7 @@ const deleteTaskByIdController = async (req, res) => {
 
     res.status(200).json({ message: "Task deleted successfully." });
   } catch (error) {
-    console.error("Error deleting task:", error);
+    logger.error("Error deleting task:", error);
     res.status(500).json({
       message: "Failed to delete task. Please try again later.",
       error,

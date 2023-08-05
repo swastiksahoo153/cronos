@@ -4,11 +4,14 @@ const { executeCommand } = require("./job.executor");
 const { createExecutionLog } = require("./execution.log.service");
 const { JOB_STATUS } = require("../consts");
 const { getTaskKey } = require("../utils/helpers");
+const { logger } = require("../../logger");
 
 const redisRepo = new RedisRepo();
 
 async function removeJobFromRedis(job) {
   await redisRepo.delete(job.id);
+
+  logger.info(`Removing the job ${JSON.stringify(job)} from redis`);
 
   // get task-id and delete key from the task - key mapping
   const taskKey = getTaskKey(job.taskId);
@@ -31,7 +34,7 @@ async function handleOnFailureJobExecutionTasks(job, result, status) {
     let jobFromRedis = await redisRepo.get(job.id);
     jobFromRedis = JSON.parse(jobFromRedis);
     jobFromRedis.retries = 1 + jobFromRedis.retries;
-    console.log(
+    logger.info(
       `Scheduling re-execution of the job ${job}, retry number: ${jobFromRedis.retries}`
     );
     await redisRepo.set(job.id, jobFromRedis, 1);
@@ -64,7 +67,10 @@ async function consumeQueue(queueName) {
       // Process the job
       executeCommand(job.command)
         .then((stdout) => {
-          console.log("stdout: " + stdout);
+          logger.info(
+            `Job ${JSON.stringify(job)} executed successfully with output: ` +
+              stdout
+          );
           return handleOnSuccessJobExecutionTasks(
             job,
             stdout,
@@ -72,7 +78,9 @@ async function consumeQueue(queueName) {
           );
         })
         .catch((error) => {
-          console.log("error: " + error);
+          logger.error(
+            `error while executiong the job - ${JSON.stringify(job)} : ` + error
+          );
           return handleOnFailureJobExecutionTasks(
             job,
             error,
@@ -82,7 +90,7 @@ async function consumeQueue(queueName) {
     }
   });
 
-  console.log("Consumer is ready to consume messages...");
+  logger.info("Consumer is ready to consume messages...");
 }
 
 module.exports = { consumeQueue };

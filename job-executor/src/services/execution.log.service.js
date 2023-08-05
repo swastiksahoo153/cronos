@@ -1,3 +1,4 @@
+const { logger } = require("../../logger");
 const { ExecutionLog } = require("../models/index");
 
 const createExecutionLog = async (job, output, status) => {
@@ -11,10 +12,12 @@ const createExecutionLog = async (job, output, status) => {
       status,
     });
 
+    logger.info("Added the execution log: " + JSON.stringify(executionLog));
+
     return executionLog;
   } catch (error) {
     // Handle any errors that might occur during database operation
-    console.error("Error creating execution log:", error);
+    logger.error("Error creating execution log:", error);
     throw error;
   }
 };

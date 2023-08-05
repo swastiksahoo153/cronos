@@ -6,6 +6,7 @@ const {
   generateUniqueId,
   getTaskKey,
 } = require("../utils/helpers");
+const { logger } = require("../../logger");
 
 const getNonRecuringJob = (task) => {
   try {
@@ -24,7 +25,7 @@ const getNonRecuringJob = (task) => {
       },
     ];
   } catch (error) {
-    console.error(error);
+    logger.error(error);
   }
 };
 
@@ -48,7 +49,7 @@ const getRecurringJobs = (task) => {
 
     return jobs;
   } catch (error) {
-    console.error(error);
+    logger.error(error);
   }
 };
 
@@ -62,9 +63,15 @@ const getPresentDayJobs = (task) => {
       jobs = getRecurringJobs(task);
     }
 
+    logger.info(
+      `Created the following jobs from task: ${task} - jobs: ${JSON.stringify(
+        jobs
+      )} `
+    );
+
     return jobs;
   } catch (error) {
-    console.error(error);
+    logger.error(error);
   }
 };
 
@@ -91,15 +98,23 @@ const addJobsToRedis = async (jobs) => {
         const timeDifferenceInSeconds = Math.floor(
           (jobTime - currentTime) / 1000
         );
+        logger.info(
+          `Added job ${JSON.stringify(
+            job
+          )} to redis with TTL: ${timeDifferenceInSeconds} seconds`
+        );
         await redisRepo.set(job.id, job, timeDifferenceInSeconds);
       } else {
         await redisRepo.set(job.id, job, 1);
+        logger.info(
+          `Added job ${JSON.stringify(job)} to redis with TTL: 1 second`
+        );
       }
       // Maintain task id to job id, used while deleting jobs for a task
       await redisRepo.addToSet(getTaskKey(job.taskId), job.id);
     });
   } catch (error) {
-    console.error(error);
+    logger.error(error);
   }
 };
 
@@ -113,9 +128,11 @@ const getAllJobs = async () => {
       ],
     });
 
+    logger.info(`Fetched the following jobs: ${allJobs}`);
+
     return allJobs;
   } catch (error) {
-    console.error(error);
+    logger.error(error);
   }
 };
 

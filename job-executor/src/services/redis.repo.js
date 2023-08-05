@@ -1,6 +1,7 @@
 const Redis = require("ioredis");
 const { getNotifierKey } = require("../utils/helpers");
 require("dotenv").config();
+const { logger } = require("../../logger");
 
 const host = "localhost";
 const port = process.env.REDIS_PORT;
@@ -57,7 +58,7 @@ class RedisRepo {
         .expire(getNotifierKey(key), expire)
         .exec();
     } catch (error) {
-      console.error(error);
+      logger.error(error);
     }
   }
 
@@ -80,7 +81,7 @@ class RedisRepo {
     try {
       return await this.redis.sadd(setKey, ...elements);
     } catch (error) {
-      console.error("Error adding elements to set:", error);
+      logger.error("Error adding elements to set:", error);
       return null;
     }
   }
@@ -95,7 +96,7 @@ class RedisRepo {
     try {
       return await this.redis.srem(setKey, ...elements);
     } catch (error) {
-      console.error("Error removing elements from set:", error);
+      logger.error("Error removing elements from set:", error);
       return null;
     }
   }
@@ -109,14 +110,14 @@ class RedisRepo {
     try {
       return await this.redis.smembers(setKey);
     } catch (error) {
-      console.error("Error getting elements from set:", error);
+      logger.error("Error getting elements from set:", error);
     }
   }
 
   async getSetLength(setKey) {
     this.redis.scard(setKey, (err, length) => {
       if (err) {
-        console.error(`Error while getting length of set :${setKey}`, err);
+        logger.error(`Error while getting length of set :${setKey}`, err);
       } else {
         return length;
       }

@@ -2,6 +2,7 @@
 const PubSub = require("./pubsub");
 const RedisRepo = require("./redis.repo");
 const { enqueueJobs } = require("./jobs.enqueuer");
+const { logger } = require("../../logger");
 
 // Create an instance of the RedisRepo class
 const redisRepo = new RedisRepo();
@@ -18,6 +19,7 @@ function RedisExpiredEvents() {
   // Handle incoming Redis expired key event messages
   PubSub.on("message", async (channel, message) => {
     const [type, key] = message.split("#");
+    logger.info("Expired redis key: " + message);
 
     switch (type) {
       case "notifier": {
