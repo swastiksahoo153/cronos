@@ -1,0 +1,4 @@
+{"level":"info","message":"Server is running at http://localhost:3000","timestamp":"2023-08-05T17:50:42.162Z"}
+{"level":"info","message":"Task added: {\"id\":2,\"name\":\"task2\",\"cronString\":\"0 * 05 08 *\",\"command\":\"test-command\",\"executeOnce\":false,\"updatedAt\":\"2023-08-05T17:52:48.677Z\",\"createdAt\":\"2023-08-05T17:52:48.677Z\"}","timestamp":"2023-08-05T17:52:48.693Z"}
+{"level":"info","message":"Enqueueing task {\"id\":2,\"name\":\"task2\",\"cronString\":\"0 * 05 08 *\",\"command\":\"test-command\",\"executeOnce\":false,\"updatedAt\":\"2023-08-05T17:52:48.677Z\",\"createdAt\":\"2023-08-05T17:52:48.677Z\"} to queue add_tasks_queue","timestamp":"2023-08-05T17:52:48.752Z"}
+{"level":"info","message":"\u001b[0mPOST /api/task \u001b[32m201\u001b[0m 125.257 ms - 173\u001b[0m","timestamp":"2023-08-05T17:52:48.802Z"}
