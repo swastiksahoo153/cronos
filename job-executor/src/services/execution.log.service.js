@@ -20,7 +20,7 @@ const createExecutionLog = async (job, output, status) => {
     return executionLog;
   } catch (error) {
     // Handle any errors that might occur during database operation
-    logger.logWithCaller("error", "Error creating execution log:", error);
+    logger.logWithCaller("error", `Error creating execution log: ${error}`);
     throw error;
   }
 };

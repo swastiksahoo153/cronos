@@ -42,7 +42,7 @@ const addTask = async (
     return task;
   } catch (error) {
     // Handle any errors that might occur during database operation
-    logger.logWithCaller("error", "Error adding task:", error);
+    logger.logWithCaller("error", "Error adding task:" + error);
     throw error;
   }
 };
@@ -62,7 +62,7 @@ const getTaskById = async (taskId) => {
     );
     return task;
   } catch (error) {
-    logger.logWithCaller("error", "Error fetching task:", error);
+    logger.logWithCaller("error", "Error fetching task:" + error);
     throw error;
   }
 };
@@ -77,7 +77,7 @@ const getAllTasks = async () => {
     );
     return tasks;
   } catch (error) {
-    logger.logWithCaller("error", "Error fetching tasks:", error);
+    logger.logWithCaller("error", "Error fetching tasks:" + error);
     throw error;
   }
 };
@@ -101,7 +101,7 @@ const updateTaskById = async (taskId, fieldsToUpdate) => {
 
     return updatedTask;
   } catch (error) {
-    logger.logWithCaller("error", "Error updating task:", error);
+    logger.logWithCaller("error", "Error updating task:" + error);
     throw error;
   }
 };
@@ -118,7 +118,7 @@ const deleteTaskById = async (taskId) => {
 
     return deletedTask;
   } catch (error) {
-    logger.logWithCaller("error", "Error deleting task:", error);
+    logger.logWithCaller("error", "Error deleting task:" + error);
     throw error;
   }
 };

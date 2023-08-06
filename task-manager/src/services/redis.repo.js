@@ -85,7 +85,7 @@ class RedisRepo {
     try {
       return await this.redis.sadd(setKey, ...elements);
     } catch (error) {
-      logger.logWithCaller("error", "Error adding elements to set:", error);
+      logger.logWithCaller("error", "Error adding elements to set:" + error);
       return null;
     }
   }
@@ -100,7 +100,10 @@ class RedisRepo {
     try {
       return await this.redis.srem(setKey, ...elements);
     } catch (error) {
-      logger.logWithCaller("error", "Error removing elements from set:", error);
+      logger.logWithCaller(
+        "error",
+        "Error removing elements from set:" + error
+      );
       return null;
     }
   }

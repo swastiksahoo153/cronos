@@ -19,22 +19,37 @@ async function getLast5Jobs(taskId) {
     );
     return jobs;
   } catch (error) {
-    logger.logWithCaller("error", "Error fetching last 5 jobs:", error);
+    logger.logWithCaller("error", "Error fetching last 5 jobs:" + error);
     throw error;
+  }
+}
+
+async function getJobsFromIds(jobIds) {
+  try {
+    const jobs = [];
+    jobIds.forEach(async (jobId) => {
+      let job = await redisRepo.get(jobId);
+      job = JSON.parse(job);
+      jobs.push(job);
+    });
+  } catch (error) {
+    logger.logWithCaller("error", "Error fetching next 5 jobs:" + error);
   }
 }
 
 async function getNext5Jobs(taskId) {
   try {
     // Get all the jobs from redis
-    let jobIds = await redisRepo.getSetElements(taskId);
+    let jobIds = await redisRepo.getSetElements(`taskId#${taskId}`);
 
-    const jobs = [];
-    jobIds.forEach(async (jobId) => {
-      const job = await redisRepo.get(jobId);
-      job.dateTime = new Date(job.dateTime).toISOString();
-      jobs.push(job);
-    });
+    let jobs = await Promise.all(
+      jobIds.map(async (jobId) => {
+        let job = await redisRepo.get(jobId);
+        job = JSON.parse(job);
+        job.dateTime = new Date(job.dateTime).toISOString();
+        return job;
+      })
+    );
 
     // Sort them by time
     jobs.sort((a, b) => (a.dateTime > b.dateTime ? 1 : -1));
@@ -48,7 +63,7 @@ async function getNext5Jobs(taskId) {
 
     return jobs;
   } catch (error) {
-    logger.logWithCaller("error", "Error fetching next 5 jobs:", error);
+    logger.logWithCaller("error", "Error fetching next 5 jobs:" + error);
   }
 }
 

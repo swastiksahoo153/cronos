@@ -19,7 +19,7 @@ const connectToDB = async () => {
     await sequalize.authenticate();
     logger.logWithCaller("info", "Successfully connected to the database.");
   } catch (error) {
-    logger.logWithCaller("error", error);
+    logger.logWithCaller("error" + error);
   }
 };
 

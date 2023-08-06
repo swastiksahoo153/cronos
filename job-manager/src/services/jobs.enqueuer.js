@@ -36,7 +36,7 @@ async function enqueueJobs(job) {
     await connection.close();
   } catch (error) {
     // Log any errors that occur during the process
-    logger.logWithCaller("error", "An error occurred in enqueueJobs:", error);
+    logger.logWithCaller("error", "An error occurred in enqueueJobs:" + error);
   }
 }
 

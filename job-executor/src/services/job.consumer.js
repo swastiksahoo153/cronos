@@ -25,7 +25,7 @@ async function removeJobFromRedis(job) {
       await redisRepo.delete(taskKey);
     }
   } catch (error) {
-    logger.logWithCaller("error", error);
+    logger.logWithCaller("error" + error);
   }
 }
 

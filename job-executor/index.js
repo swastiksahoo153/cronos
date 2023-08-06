@@ -8,6 +8,6 @@ require("dotenv").config();
   await connectToDB();
   // Start the consumer
   consumeQueue("jobs_queue").catch((error) =>
-    logger.logWithCaller("error", "Error:", error)
+    logger.logWithCaller("error", "Error:" + error)
   );
 })();

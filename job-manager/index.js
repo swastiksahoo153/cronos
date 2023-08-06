@@ -25,12 +25,12 @@ app.listen(PORT, async () => {
   // Start listening for Redis expired events
   RedisExpiredEvents();
   taskConsumer("add_tasks_queue").catch((error) =>
-    logger.logWithCaller("error", "Error:", error)
+    logger.logWithCaller("error", "Error:" + error)
   );
   taskConsumer("delete_tasks_queue").catch((error) =>
-    logger.logWithCaller("error", "Error:", error)
+    logger.logWithCaller("error", "Error:" + error)
   );
   taskConsumer("update_tasks_queue").catch((error) =>
-    logger.logWithCaller("error", "Error:", error)
+    logger.logWithCaller("error", "Error:" + error)
   );
 });

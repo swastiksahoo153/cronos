@@ -33,9 +33,9 @@ const deleteJobsService = async (taskId) => {
 
     logger.logWithCaller(
       "info",
-      `Following jobs are being deleted for the task: ${JSON.stringify(
-        task
-      )}: Job Ids: ${JSON.stringify(jobIds)}`
+      `Following jobs are being deleted for the task: ${taskId}: Job Ids: ${JSON.stringify(
+        jobIds
+      )}`
     );
 
     await redisRepo.delete(`taskId#${taskId}`);

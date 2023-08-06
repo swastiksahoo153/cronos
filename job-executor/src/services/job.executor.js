@@ -9,9 +9,6 @@ const { logger } = require("../../logger");
  * @returns {Promise<string>} A Promise that resolves with the standard output of the executed command.
  */
 function executeCommand(command) {
-  // Temporary: Prepend "echo " to the command for demonstration purposes
-  command = "echo " + command;
-
   return new Promise((resolve, reject) => {
     exec(command, (error, stdout, stderr) => {
       if (error) {
