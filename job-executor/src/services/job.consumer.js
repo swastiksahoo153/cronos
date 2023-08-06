@@ -9,16 +9,20 @@ const { logger } = require("../../logger");
 const redisRepo = new RedisRepo();
 
 async function removeJobFromRedis(job) {
-  await redisRepo.delete(job.id);
+  try {
+    await redisRepo.delete(job.id);
 
-  logger.info(`Removing the job ${JSON.stringify(job)} from redis`);
+    logger.info(`Removing the job ${JSON.stringify(job)} from redis`);
 
-  // get task-id and delete key from the task - key mapping
-  const taskKey = getTaskKey(job.taskId);
-  await redisRepo.deleteFromSetByValue(taskKey, job.id);
-  const setLength = await redisRepo.getSetLength(taskKey);
-  if (setLength == 0) {
-    await redisRepo.delete(taskKey);
+    // get task-id and delete key from the task - key mapping
+    const taskKey = getTaskKey(job.taskId);
+    await redisRepo.deleteFromSetByValue(taskKey, job.id);
+    const setLength = await redisRepo.getSetLength(taskKey);
+    if (setLength == 0) {
+      await redisRepo.delete(taskKey);
+    }
+  } catch (error) {
+    logger.error(error);
   }
 }
 
@@ -28,18 +32,22 @@ async function handleOnSuccessJobExecutionTasks(job, result, status) {
 }
 
 async function handleOnFailureJobExecutionTasks(job, result, status) {
-  let chachedJob = await redisRepo.get(job.id);
-  chachedJob = JSON.parse(chachedJob);
-  if (chachedJob.retries < 2) {
-    let jobFromRedis = await redisRepo.get(job.id);
-    jobFromRedis = JSON.parse(jobFromRedis);
-    jobFromRedis.retries = 1 + jobFromRedis.retries;
-    logger.info(
-      `Scheduling re-execution of the job ${job}, retry number: ${jobFromRedis.retries}`
-    );
-    await redisRepo.set(job.id, jobFromRedis, 1);
+  try {
+    let chachedJob = await redisRepo.get(job.id);
+    chachedJob = JSON.parse(chachedJob);
+    if (chachedJob.retries < 2) {
+      let jobFromRedis = await redisRepo.get(job.id);
+      jobFromRedis = JSON.parse(jobFromRedis);
+      jobFromRedis.retries = 1 + jobFromRedis.retries;
+      logger.info(
+        `Scheduling re-execution of the job ${job}, retry number: ${jobFromRedis.retries}`
+      );
+      await redisRepo.set(job.id, jobFromRedis, 1);
+    }
+    return createExecutionLog(job, result, status);
+  } catch (error) {
+    logger.error(error);
   }
-  return createExecutionLog(job, result, status);
 }
 
 /**

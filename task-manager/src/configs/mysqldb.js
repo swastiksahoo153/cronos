@@ -5,11 +5,19 @@ const { logger } = require("../../logger");
 // Syntax for setting up a new connection
 // Sequalize (database_name, user_name, password, {dialect: database, host: host})
 
-const PASSWORD = process.env.SQL_PASSWORD;
+const PASSWORD = process.env.MYSQL_PASSWORD;
+const DATABASE = process.env.MYSQL_DATABASE;
+const USER = process.env.MYSQL_USER;
+const HOST = process.env.MYSQL_HOST;
 
-const sequalize = new Sequalize("cron", "root", PASSWORD, {
+console.log(PASSWORD);
+console.log(DATABASE);
+console.log(USER);
+console.log(HOST);
+
+const sequalize = new Sequalize(DATABASE, USER, PASSWORD, {
   dialect: "mysql",
-  host: "localhost",
+  host: HOST,
 });
 
 // Check the connection to database - calling authenticate method

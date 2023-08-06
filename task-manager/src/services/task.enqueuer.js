@@ -1,6 +1,8 @@
 const amqp = require("amqplib");
 const { getAllTasks } = require("./task.service");
 const { logger } = require("../../logger");
+require("dotenv").config();
+const HOST = process.env.RABBITMQ_HOST;
 
 /**
  * Enqueues tasks into a RabbitMQ queue named "add_tasks_queue".
@@ -13,7 +15,7 @@ const { logger } = require("../../logger");
  */
 async function enqueueTasks(tasks, queueName) {
   // Establish a connection to the RabbitMQ server
-  const connection = await amqp.connect("amqp://localhost");
+  const connection = await amqp.connect(`amqp://${HOST}`);
 
   // Create a channel for communication
   const channel = await connection.createChannel();
