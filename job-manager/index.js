@@ -20,17 +20,17 @@ app.get("/", (request, response) => {
 });
 
 app.listen(PORT, async () => {
-  logger.info(`Server is running at http://localhost:${PORT}`);
+  logger.logWithCaller("info", `Server is running at http://localhost:${PORT}`);
   await connectToDB();
   // Start listening for Redis expired events
   RedisExpiredEvents();
   taskConsumer("add_tasks_queue").catch((error) =>
-    logger.error("Error:", error)
+    logger.logWithCaller("error", "Error:", error)
   );
   taskConsumer("delete_tasks_queue").catch((error) =>
-    logger.error("Error:", error)
+    logger.logWithCaller("error", "Error:", error)
   );
   taskConsumer("update_tasks_queue").catch((error) =>
-    logger.error("Error:", error)
+    logger.logWithCaller("error", "Error:", error)
   );
 });

@@ -18,6 +18,16 @@ router.post("/task", TaskController.addTaskController);
 router.get("/task/all", TaskController.getAllTasksController);
 
 /**
+ * @route   GET task/prev-and-next-5-jobs/:id
+ * @desc    Get the last 5 jobs executed and next 5 jobs to be executed for the given task-id
+ * @access  Public
+ */
+router.get(
+  "/task/prev-and-next-5-jobs/:id",
+  TaskController.getPrevAndNextJobController
+);
+
+/**
  * @route   GET /task/:id
  * @desc    Get a specific task by ID
  * @access  Public

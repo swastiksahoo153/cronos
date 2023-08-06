@@ -25,7 +25,8 @@ async function enqueueJobs(job) {
     await channel.assertQueue(queueName);
 
     // Send each job to the queue as a JSON string
-    logger.info(
+    logger.logWithCaller(
+      "info",
       `Enqueueing the job ${JSON.stringify(job)} to queue ${queueName}`
     );
     channel.sendToQueue(queueName, Buffer.from(JSON.stringify(job)));
@@ -35,7 +36,7 @@ async function enqueueJobs(job) {
     await connection.close();
   } catch (error) {
     // Log any errors that occur during the process
-    logger.error("An error occurred in enqueueJobs:", error);
+    logger.logWithCaller("error", "An error occurred in enqueueJobs:", error);
   }
 }
 

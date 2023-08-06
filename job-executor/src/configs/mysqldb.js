@@ -17,9 +17,9 @@ const sequalize = new Sequalize("cron", "root", PASSWORD, {
 const connectToDB = async () => {
   try {
     await sequalize.authenticate();
-    logger.info("Successfully connected to the database.");
+    logger.logWithCaller("info", "Successfully connected to the database.");
   } catch (error) {
-    logger.error(error);
+    logger.logWithCaller("error", error);
   }
 };
 

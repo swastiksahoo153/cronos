@@ -21,7 +21,7 @@ app.get("/", (request, response) => {
 });
 
 app.listen(PORT, async () => {
-  logger.info(`Server is running at http://localhost:${PORT}`);
+  logger.logWithCaller("info", `Server is running at http://localhost:${PORT}`);
   await connectToDB();
   scheduleTaskForMidnight(getTasksAndEnqueue);
 });

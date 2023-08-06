@@ -58,7 +58,7 @@ class RedisRepo {
         .expire(getNotifierKey(key), expire)
         .exec();
     } catch (error) {
-      logger.error(error);
+      logger.logWithCaller("error", error);
     }
   }
 
@@ -81,7 +81,7 @@ class RedisRepo {
     try {
       return await this.redis.sadd(setKey, ...elements);
     } catch (error) {
-      logger.error("Error adding elements to set:", error);
+      logger.logWithCaller("error", "Error adding elements to set:", error);
       return null;
     }
   }
@@ -96,7 +96,7 @@ class RedisRepo {
     try {
       return await this.redis.srem(setKey, ...elements);
     } catch (error) {
-      logger.error("Error removing elements from set:", error);
+      logger.logWithCaller("error", "Error removing elements from set:", error);
       return null;
     }
   }
@@ -110,14 +110,18 @@ class RedisRepo {
     try {
       return await this.redis.smembers(setKey);
     } catch (error) {
-      logger.error("Error getting elements from set:", error);
+      logger.logWithCaller("error", "Error getting elements from set:", error);
     }
   }
 
   async getSetLength(setKey) {
     this.redis.scard(setKey, (err, length) => {
       if (err) {
-        logger.error(`Error while getting length of set :${setKey}`, err);
+        logger.logWithCaller(
+          "error",
+          `Error while getting length of set :${setKey}`,
+          err
+        );
       } else {
         return length;
       }

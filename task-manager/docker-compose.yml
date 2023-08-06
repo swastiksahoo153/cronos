@@ -3,6 +3,8 @@ services:
   # RabbitMQ service
   rabbitmq:
     image: rabbitmq:management # RabbitMQ with management plugin
+    networks:
+      - app-network
     ports:
       - "5672:5672" # RabbitMQ port
       - "15672:15672" # RabbitMQ management UI port
@@ -10,6 +12,8 @@ services:
   # Redis service
   redis:
     image: redis:latest
+    networks:
+      - app-network
     ports:
       - "6379:6379" # Redis port
 
@@ -21,8 +25,11 @@ services:
       MYSQL_DATABASE: cron
       MYSQL_USER: user
       MYSQL_PASSWORD: pass
+    networks:
+      - app-network
     ports:
       - "3306:3306" # MySQL port
+    restart: always
     expose:
       - "3306"
 
@@ -35,6 +42,8 @@ services:
       - redis
       - rabbitmq
       - mysql
+    networks:
+      - app-network
     environment:
       # Add any environment variables your Node.js API requires
       REDIS_HOST: redis
@@ -43,3 +52,7 @@ services:
       MYSQL_USER: user
       MYSQL_PASSWORD: pass
       MYSQL_DATABASE: cron
+
+networks:
+  app-network:
+    driver: bridge

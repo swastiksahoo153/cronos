@@ -12,7 +12,10 @@ async function removeJobFromRedis(job) {
   try {
     await redisRepo.delete(job.id);
 
-    logger.info(`Removing the job ${JSON.stringify(job)} from redis`);
+    logger.logWithCaller(
+      "info",
+      `Removing the job ${JSON.stringify(job)} from redis`
+    );
 
     // get task-id and delete key from the task - key mapping
     const taskKey = getTaskKey(job.taskId);
@@ -22,7 +25,7 @@ async function removeJobFromRedis(job) {
       await redisRepo.delete(taskKey);
     }
   } catch (error) {
-    logger.error(error);
+    logger.logWithCaller("error", error);
   }
 }
 
@@ -39,14 +42,15 @@ async function handleOnFailureJobExecutionTasks(job, result, status) {
       let jobFromRedis = await redisRepo.get(job.id);
       jobFromRedis = JSON.parse(jobFromRedis);
       jobFromRedis.retries = 1 + jobFromRedis.retries;
-      logger.info(
+      logger.logWithCaller(
+        "info",
         `Scheduling re-execution of the job ${job}, retry number: ${jobFromRedis.retries}`
       );
       await redisRepo.set(job.id, jobFromRedis, 1);
     }
     return createExecutionLog(job, result, status);
   } catch (error) {
-    logger.error(error);
+    logger.logWithCaller("error", error);
   }
 }
 
@@ -75,7 +79,8 @@ async function consumeQueue(queueName) {
       // Process the job
       executeCommand(job.command)
         .then((stdout) => {
-          logger.info(
+          logger.logWithCaller(
+            "info",
             `Job ${JSON.stringify(job)} executed successfully with output: ` +
               stdout
           );
@@ -86,7 +91,8 @@ async function consumeQueue(queueName) {
           );
         })
         .catch((error) => {
-          logger.error(
+          logger.logWithCaller(
+            "error",
             `error while executiong the job - ${JSON.stringify(job)} : ` + error
           );
           return handleOnFailureJobExecutionTasks(
@@ -98,7 +104,7 @@ async function consumeQueue(queueName) {
     }
   });
 
-  logger.info("Consumer is ready to consume messages...");
+  logger.logWithCaller("info", "Consumer is ready to consume messages...");
 }
 
 module.exports = { consumeQueue };

@@ -7,5 +7,7 @@ require("dotenv").config();
 (async () => {
   await connectToDB();
   // Start the consumer
-  consumeQueue("jobs_queue").catch((error) => logger.error("Error:", error));
+  consumeQueue("jobs_queue").catch((error) =>
+    logger.logWithCaller("error", "Error:", error)
+  );
 })();

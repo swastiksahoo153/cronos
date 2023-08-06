@@ -12,12 +12,15 @@ const createExecutionLog = async (job, output, status) => {
       status,
     });
 
-    logger.info("Added the execution log: " + JSON.stringify(executionLog));
+    logger.logWithCaller(
+      "info",
+      "Added the execution log: " + JSON.stringify(executionLog)
+    );
 
     return executionLog;
   } catch (error) {
     // Handle any errors that might occur during database operation
-    logger.error("Error creating execution log:", error);
+    logger.logWithCaller("error", "Error creating execution log:", error);
     throw error;
   }
 };

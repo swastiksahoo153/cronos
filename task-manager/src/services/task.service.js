@@ -1,10 +1,25 @@
 const { Task } = require("../models/index");
 const { logger } = require("../../logger");
 
-const addTask = async (name, cronString, executeOnce, dateTime, command) => {
+const addTask = async (
+  name,
+  cronString,
+  executeOnce,
+  dateTime,
+  command,
+  immediate
+) => {
   try {
     let task;
-    if (executeOnce) {
+    if (immediate) {
+      const dateTimeNow = new Date().toISOString();
+      task = await Task.create({
+        name,
+        dateTime: dateTimeNow,
+        command,
+        executeOnce: true,
+      });
+    } else if (executeOnce) {
       // If executeOnce is true, create task with name, dateTime, and command
       task = await Task.create({
         name,
@@ -12,7 +27,7 @@ const addTask = async (name, cronString, executeOnce, dateTime, command) => {
         command,
         executeOnce,
       });
-    } else {
+    } else if (!executeOnce) {
       // If executeOnce is false, create task with name, chronString, and command
       task = await Task.create({
         name,
@@ -22,12 +37,12 @@ const addTask = async (name, cronString, executeOnce, dateTime, command) => {
       });
     }
 
-    logger.info("Task added: " + JSON.stringify(task));
+    logger.logWithCaller("info", "Task added: " + JSON.stringify(task));
 
     return task;
   } catch (error) {
     // Handle any errors that might occur during database operation
-    logger.error("Error adding task:", error);
+    logger.logWithCaller("error", "Error adding task:", error);
     throw error;
   }
 };
@@ -39,10 +54,15 @@ const getTaskById = async (taskId) => {
         id: taskId,
       },
     });
-    logger.info("Found task with task id: ", taskId, JSON.stringify(task));
+    logger.logWithCaller(
+      "info",
+      "Found task with task id: ",
+      taskId,
+      JSON.stringify(task)
+    );
     return task;
   } catch (error) {
-    logger.error("Error fetching task:", error);
+    logger.logWithCaller("error", "Error fetching task:", error);
     throw error;
   }
 };
@@ -50,13 +70,14 @@ const getTaskById = async (taskId) => {
 const getAllTasks = async () => {
   try {
     const tasks = await Task.findAll({});
-    logger.info(
+    logger.logWithCaller(
+      "info",
       "Fetched tasks with task ids:",
       tasks.map((task) => task.id)
     );
     return tasks;
   } catch (error) {
-    logger.error("Error fetching tasks:", error);
+    logger.logWithCaller("error", "Error fetching tasks:", error);
     throw error;
   }
 };
@@ -73,13 +94,14 @@ const updateTaskById = async (taskId, fieldsToUpdate) => {
     });
 
     const updatedTask = await taskToUpdate.update(fieldsToUpdate);
-    logger.info(
+    logger.logWithCaller(
+      "info",
       `Task with task id ${taskId} updated to ${JSON.stringify(updatedTask)}`
     );
 
     return updatedTask;
   } catch (error) {
-    logger.error("Error updating task:", error);
+    logger.logWithCaller("error", "Error updating task:", error);
     throw error;
   }
 };
@@ -89,11 +111,14 @@ const deleteTaskById = async (taskId) => {
     const deletedTask = await Task.destroy({
       where: { id: taskId },
     });
-    logger.info("Task deleted: " + JSON.stringify(deletedTask));
+    logger.logWithCaller(
+      "info",
+      "Task deleted: " + JSON.stringify(deletedTask)
+    );
 
     return deletedTask;
   } catch (error) {
-    logger.error("Error deleting task:", error);
+    logger.logWithCaller("error", "Error deleting task:", error);
     throw error;
   }
 };

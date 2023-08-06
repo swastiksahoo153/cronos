@@ -13,8 +13,7 @@ const getNonRecuringJob = (task) => {
     // From sequelize we get date object for non recurring tasks,
     // so convert it string and also remove milli seconds for
     // consistency with rest of the timestamps
-    let timeStamp = task.dateTime.toISOString();
-    timeStamp = timeStamp.substring(0, timeStamp.length - 5) + "Z";
+    let timeStamp = task.dateTime;
 
     // Return as list to keep format consistent with recurring jobs
     return [
@@ -25,7 +24,7 @@ const getNonRecuringJob = (task) => {
       },
     ];
   } catch (error) {
-    logger.error(error);
+    logger.logWithCaller("error", error);
   }
 };
 
@@ -49,7 +48,7 @@ const getRecurringJobs = (task) => {
 
     return jobs;
   } catch (error) {
-    logger.error(error);
+    logger.logWithCaller("error", error);
   }
 };
 
@@ -63,7 +62,16 @@ const getPresentDayJobs = (task) => {
       jobs = getRecurringJobs(task);
     }
 
-    logger.info(
+    // Provide a buffer of 1 min
+    const currentTime = new Date();
+    const currentTimeMinus60Seconds = new Date(currentTime.getTime() - 60000);
+    jobs = jobs.filter((job) => {
+      const jobTime = new Date(job.dateTime);
+      return jobTime >= currentTimeMinus60Seconds;
+    });
+
+    logger.logWithCaller(
+      "info",
       `Created the following jobs from task: ${task} - jobs: ${JSON.stringify(
         jobs
       )} `
@@ -71,7 +79,7 @@ const getPresentDayJobs = (task) => {
 
     return jobs;
   } catch (error) {
-    logger.error(error);
+    logger.logWithCaller("error", error);
   }
 };
 
@@ -98,7 +106,8 @@ const addJobsToRedis = async (jobs) => {
         const timeDifferenceInSeconds = Math.floor(
           (jobTime - currentTime) / 1000
         );
-        logger.info(
+        logger.logWithCaller(
+          "info",
           `Added job ${JSON.stringify(
             job
           )} to redis with TTL: ${timeDifferenceInSeconds} seconds`
@@ -106,7 +115,8 @@ const addJobsToRedis = async (jobs) => {
         await redisRepo.set(job.id, job, timeDifferenceInSeconds);
       } else {
         await redisRepo.set(job.id, job, 1);
-        logger.info(
+        logger.logWithCaller(
+          "info",
           `Added job ${JSON.stringify(job)} to redis with TTL: 1 second`
         );
       }
@@ -114,7 +124,7 @@ const addJobsToRedis = async (jobs) => {
       await redisRepo.addToSet(getTaskKey(job.taskId), job.id);
     });
   } catch (error) {
-    logger.error(error);
+    logger.logWithCaller("error", error);
   }
 };
 
@@ -128,11 +138,11 @@ const getAllJobs = async () => {
       ],
     });
 
-    logger.info(`Fetched the following jobs: ${allJobs}`);
+    logger.logWithCaller("info", `Fetched the following jobs: ${allJobs}`);
 
     return allJobs;
   } catch (error) {
-    logger.error(error);
+    logger.logWithCaller("error", error);
   }
 };
 

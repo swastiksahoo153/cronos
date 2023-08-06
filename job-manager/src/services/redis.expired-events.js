@@ -19,7 +19,7 @@ function RedisExpiredEvents() {
   // Handle incoming Redis expired key event messages
   PubSub.on("message", async (channel, message) => {
     const [type, key] = message.split("#");
-    logger.info("Expired redis key: " + message);
+    logger.logWithCaller("info", "Expired redis key: " + message);
 
     switch (type) {
       case "notifier": {

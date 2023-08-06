@@ -7,7 +7,8 @@ const addJobsService = async (task) => {
   try {
     // Make all the job for this task
     const jobs = getPresentDayJobs(task);
-    logger.info(
+    logger.logWithCaller(
+      "info",
       `Following jobs are being created for the task: ${JSON.stringify(
         task
       )}: Jobs: ${JSON.stringify(jobs)}`
@@ -16,7 +17,7 @@ const addJobsService = async (task) => {
     // Add the jobs to redis with proper TTL
     await addJobsToRedis(jobs);
   } catch (error) {
-    logger.error("Error adding jobs to redis: " + error);
+    logger.logWithCaller("error", "Error adding jobs to redis: " + error);
   }
 };
 
@@ -30,7 +31,8 @@ const deleteJobsService = async (taskId) => {
       await redisRepo.delete(`notifier#${jobId}`);
     });
 
-    logger.info(
+    logger.logWithCaller(
+      "info",
       `Following jobs are being deleted for the task: ${JSON.stringify(
         task
       )}: Job Ids: ${JSON.stringify(jobIds)}`
@@ -38,7 +40,10 @@ const deleteJobsService = async (taskId) => {
 
     await redisRepo.delete(`taskId#${taskId}`);
   } catch (error) {
-    logger.error("Error while deleting jobs from redis: " + error);
+    logger.logWithCaller(
+      "error",
+      "Error while deleting jobs from redis: " + error
+    );
   }
 };
 
@@ -47,7 +52,8 @@ async function addJobs(channel, queueName) {
     if (message !== null) {
       // Parse the message content to get the job object
       const task = JSON.parse(message.content.toString());
-      logger.info(
+      logger.logWithCaller(
+        "info",
         `Dequeueing task: ${JSON.stringify(task)} from queue ${queueName}`
       );
 
@@ -64,7 +70,8 @@ async function deleteJobs(channel, queueName) {
     if (message !== null) {
       // Parse the message content to get the job object
       const taskId = JSON.parse(message.content.toString());
-      logger.info(
+      logger.logWithCaller(
+        "info",
         `Dequeueing task with task id: ${taskId} from queue ${queueName}`
       );
 
@@ -81,7 +88,8 @@ async function updateJobs(channel, queueName) {
     if (message !== null) {
       // Parse the message content to get the job object
       const task = JSON.parse(message.content.toString());
-      logger.info(
+      logger.logWithCaller(
+        "info",
         `Dequeueing task: ${JSON.stringify(task)} from queue ${queueName}`
       );
 
@@ -113,12 +121,12 @@ async function taskConsumer(queueName) {
         updateJobs(channel, queueName);
         break;
       default:
-        logger.error(`Invalid queue ${queueName}`);
+        logger.logWithCaller("error", `Invalid queue ${queueName}`);
     }
 
-    logger.info("Consumer is ready to consume messages...");
+    logger.logWithCaller("info", "Consumer is ready to consume messages...");
   } catch (error) {
-    logger.error(error);
+    logger.logWithCaller("error", error);
   }
 }
 

@@ -1,4 +1,3 @@
-// logger.js
 const winston = require("winston");
 const morgan = require("morgan");
 
@@ -18,25 +17,50 @@ const fileTransport = new winston.transports.File({
   filename: "./logs/job.manager.log",
   format: winston.format.combine(
     winston.format.timestamp(),
-    winston.format.json()
+    winston.format.json(),
+    winston.format.printf(({ level, message, timestamp, caller }) => {
+      return `${timestamp} [${level}] ${caller} - ${message}`;
+    })
   ),
 });
 
 // Configure the Winston logger with the desired transports.
 const logger = winston.createLogger({
   levels: logLevels,
-  format: winston.format.combine(winston.format.simple()),
+  format: winston.format.combine(
+    winston.format.simple(),
+    winston.format.printf(({ level, message, timestamp, caller }) => {
+      return `${timestamp} [${level}] ${caller} - ${message}`;
+    })
+  ),
   transports: [new winston.transports.Console(), fileTransport],
 });
 
 // Create a stream object for Morgan to use with Winston
 const morganStream = {
   write: (message) => {
-    logger.info(message.trim());
+    logger.logWithCaller("info", message.trim());
   },
 };
 
 // Create a middleware function for Morgan using the predefined stream
 const morganMiddleware = morgan("dev", { stream: morganStream });
+
+// Create a function to extract file name and line number from the stack trace
+function extractCaller(info) {
+  const parts = info.stack
+    .split("\n")[2]
+    .trim()
+    .match(/at (.+) \((.+)\)/);
+  if (parts && parts.length === 3) {
+    return { caller: `${parts[1]} (${parts[2]})` };
+  }
+  return { caller: info.module };
+}
+
+// Add a custom log method to the logger with caller information
+logger.logWithCaller = (level, message) => {
+  logger.log(level, message, extractCaller(new Error()));
+};
 
 module.exports = { logger, morganMiddleware };
