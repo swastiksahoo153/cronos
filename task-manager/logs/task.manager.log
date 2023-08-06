@@ -25,3 +25,4 @@
 2023-08-06T17:10:45.788Z [info] Object.addTask (C:\Users\Swastik Sahoo\Desktop\Chronos\task-manager\src\services\task.service.js:40:12) - Task added: {"id":6,"name":"task5","dateTime":"2023-08-06T17:10:45.779Z","command":"aaecho hello","executeOnce":true,"updatedAt":"2023-08-06T17:10:45.780Z","createdAt":"2023-08-06T17:10:45.780Z"}
 2023-08-06T17:10:45.846Z [info] undefined - Enqueueing task {"id":6,"name":"task5","dateTime":"2023-08-06T17:10:45.779Z","command":"aaecho hello","executeOnce":true,"updatedAt":"2023-08-06T17:10:45.780Z","createdAt":"2023-08-06T17:10:45.780Z"} to queue add_tasks_queue
 2023-08-06T17:10:45.897Z [info] Object.write (C:\Users\Swastik Sahoo\Desktop\Chronos\task-manager\logger.js:42:12) - [0mPOST /api/task [32m201[0m 115.835 ms - 183[0m
+2023-08-06T19:22:58.547Z [info] Server.<anonymous> (C:\Users\Swastik Sahoo\Desktop\Chronos\task-manager\index.js:24:10) - Server is running at http://localhost:3000
